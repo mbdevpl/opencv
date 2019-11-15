@@ -300,6 +300,13 @@ public:
         << "detectShadows" << (int)bShadowDetection
         << "shadowValue" << (int)nShadowDetection
         << "shadowThreshold" << fTau;
+
+        // saving model along with the parameters to avoid initialization
+        fs << "nframes" << nframes
+        << "frameType" << frameType
+        << "frameSize" << frameSize
+        << "bgmodel" << bgmodel
+        << "bgmodelUsedModes" << bgmodelUsedModes;
     }
 
     virtual void read(const FileNode& fn) CV_OVERRIDE
@@ -317,6 +324,19 @@ public:
         bShadowDetection = (int)fn["detectShadows"] != 0;
         nShadowDetection = saturate_cast<uchar>((int)fn["shadowValue"]);
         fTau = (float)fn["shadowThreshold"];
+
+        // reading model along with the paramaters to avoid initialization
+        fn["nframes"] >> nframes;
+        fn["frameType"] >> frameType;
+        fn["frameSize"] >> frameSize;
+        fn["bgmodel"] >> bgmodel;
+        fn["bgmodelUsedModes"] >> bgmodelUsedModes;
+
+        // verify that loaded model is usable
+        int nchannels = CV_MAT_CN(frameType);
+        CV_Assert( nchannels <= CV_CN_MAX );
+        CV_Assert( nmixtures <= 255);
+        // TODO: verify types and sizes of bgmodel* matricces
     }
 
 protected:
